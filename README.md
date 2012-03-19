@@ -1,9 +1,7 @@
 kaantaja
 =========
 
-kaantaja is a Python class for interfacing with Microsoft Translate API.
-
-kaantaja is for Python 3
+kaantaja is a Python3 library for interfacing with Microsoft Translate API.
 
 licensed under the [Apache Licence, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
 
