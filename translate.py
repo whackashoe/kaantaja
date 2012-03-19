@@ -3,6 +3,7 @@
 """
 Interface to Microsoft Translator API
 """
+import sys
 import urllib.parse
 import urllib.request
 import codecs
@@ -10,7 +11,7 @@ try:    import json
 except: import simplejson as json
 
 class Translator():
-	app_id = '2EB3615434F1D1401B9E3636840C763D22B15C35'	#substitute for your own appid from microsofts bing website
+	app_id = ''	#substitute for your own appid from microsofts bing website
 	translate_api_url = "http://api.microsofttranslator.com/V2/Ajax.svc/Translate"
 	detect_api_url = "http://api.microsofttranslator.com/V2/Ajax.svc/Detect"
 
@@ -34,17 +35,48 @@ class Translator():
 		data = self.unicode_urlencode(args)
 		sock = urllib.request.urlopen(api_url + '?' + data)
 		result = sock.read()
-		if result.startswith(codecs.BOM_UTF8):
-			result = result.lstrip(codecs.BOM_UTF8).decode('utf-8')
-		elif result.startswith(codecs.BOM_UTF16_LE):
-			result = result.lstrip(codecs.BOM_UTF16_LE).decode('utf-16-le')
-		elif result.startswith(codecs.BOM_UTF16_BE):
-			result = result.lstrip(codecs.BOM_UTF16_BE).decode('utf-16-be')
+		result = self.applyDecoding(result)
 			
 		return json.loads(result)
 	
 	#translates text or html
-	def translate(self, text, source=None, target="en", html=False):
+	def translate(self, text, source=None, target="en"):
+		html = False
+		if text.startswith("http"):
+			html = True
+			webText = str(urllib.request.urlopen(text).read())
+			if(len(webText) >= 1024):
+				webList = self.splitCount(webText, 1024)
+				finalText = ''
+				print(len(webList))
+				for i in range(0, len(webList)):
+					query_args = {
+						'appId': self.app_id,
+						'text': webList[i],
+						'to': target,
+						'contentType': 'text/plain' if not html else 'text/html',
+						'category': 'general'
+					}
+					if source:
+						query_args['from'] = source
+						
+					finalText += self.query(self.translate_api_url, query_args)
+					
+					sys.stdout.write('-')
+				return finalText
+			
+			query_args = {
+				'appId': self.app_id,
+				'text': webText,
+				'to': target,
+				'contentType': 'text/plain' if not html else 'text/html',
+				'category': 'general'
+			}
+			if source:
+				query_args['from'] = source
+			
+			return self.query(self.translate_api_url, query_args)
+	
 		query_args = {
 			'appId': self.app_id,
 			'text': text,
@@ -58,11 +90,55 @@ class Translator():
 		return self.query(self.translate_api_url, query_args)
 	
 	#detects language of input, returns abbreviation that can be used to translate
+	#on bings end there seems to be an issue with parsing html to detect
+	#todo: work around this shiz
 	def detect(self, text):
+		html = False
+		if text.startswith("http"):
+			html = True
+			webText = str(urllib.request.urlopen(text).read())
+			if(len(webText) >= 1024):
+				webList = self.splitCount(webText, 1024)
+				finalText = ''
+				print(len(webList))
+				for i in range(0, 2 if(len(webList) >= 2) else len(webList)):
+					query_args = {
+						'appId': self.app_id,
+						'text': webList[i],
+						'contentType': 'text/plain' if not html else 'text/html',
+					}
+						
+					finalText += self.query(self.detect_api_url, query_args)
+				return finalText
+			
+			query_args = {
+				'appId': self.app_id,
+				'text': webText,
+				'contentType': 'text/plain' if not html else 'text/html',
+			}
+			
+			return self.query(self.detect_api_url, query_args)
+			
 		query_args = {
 			'appId': self.app_id,
 			'text': text,
-			'contentType': 'text/plain'
+			'contentType': 'text/plain' if not html else 'text/html',
 		}
 			
 		return self.query(self.detect_api_url, query_args)
+		
+	#taken from http://code.activestate.com/recipes/496784-split-string-into-n-size-pieces/
+	#code splits string into n sized pieces
+	def splitCount(self, s, count):
+		return [''.join(x) for x in zip(*[list(s[z::count]) for z in range(count)])]
+		
+	#attempts to decode items from web
+	def applyDecoding(self, data):
+		if data.startswith(codecs.BOM_UTF8):
+			return data.lstrip(codecs.BOM_UTF8).decode('utf-8')
+		elif data.startswith(codecs.BOM_UTF16_LE):
+			return data.lstrip(codecs.BOM_UTF16_LE).decode('utf-16-le')
+		elif data.startswith(codecs.BOM_UTF16_BE):
+			return data.lstrip(codecs.BOM_UTF16_BE).decode('utf-16-be')
+			
+		return None
