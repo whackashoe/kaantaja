@@ -6,7 +6,8 @@ Interface to Microsoft Translator API
 import urllib.parse
 import urllib.request
 import codecs
-import json
+try:    import json
+except: import simplejson as json
 
 class Translator():
 	app_id = '2EB3615434F1D1401B9E3636840C763D22B15C35'	#substitute for your own appid from microsofts bing website
@@ -57,13 +58,11 @@ class Translator():
 		return self.query(self.translate_api_url, query_args)
 	
 	#detects language of input, returns abbreviation that can be used to translate
-	def detect(self, text, target="en", html=False):
+	def detect(self, text):
 		query_args = {
 			'appId': self.app_id,
 			'text': text,
-			'to': target,
-			'contentType': 'text/plain' if not html else 'text/html',
-			'category': 'general'
+			'contentType': 'text/plain'
 		}
 			
 		return self.query(self.detect_api_url, query_args)
