@@ -42,13 +42,14 @@ class Translator():
 	#translates text or html
 	def translate(self, text, source=None, target="en"):
 		html = False
+		
 		if text.startswith("http"):
 			html = True
 			webText = str(urllib.request.urlopen(text).read())
 			if(len(webText) >= 1024):
 				webList = self.splitCount(webText, 1024)
 				finalText = ''
-				print(len(webList))
+				
 				for i in range(0, len(webList)):
 					query_args = {
 						'appId': self.app_id,
@@ -62,7 +63,6 @@ class Translator():
 						
 					finalText += self.query(self.translate_api_url, query_args)
 					
-					sys.stdout.write('-')
 				return finalText
 			
 			query_args = {
@@ -94,13 +94,13 @@ class Translator():
 	#todo: work around this shiz
 	def detect(self, text):
 		html = False
+		
 		if text.startswith("http"):
 			html = True
 			webText = str(urllib.request.urlopen(text).read())
 			if(len(webText) >= 1024):
 				webList = self.splitCount(webText, 1024)
 				finalText = ''
-				print(len(webList))
 				for i in range(0, 2 if(len(webList) >= 2) else len(webList)):
 					query_args = {
 						'appId': self.app_id,
