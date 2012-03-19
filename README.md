@@ -19,10 +19,10 @@ kaantaja can:
 Example
 -------
 
-Detects Frenchness and then translates it to English by default.
+
 ~~~~.python
+#Detects Frenchness and then translates it to English by default.
 trans = Translator()
 text = "poivre gonfleur"
 print(trans.translate(text, trans.detect(text)))
-
 ~~~~
