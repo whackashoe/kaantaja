@@ -11,7 +11,7 @@ import codecs
 try:    import json
 except: import simplejson as json
 
-class Translator():
+class Translator:
 	app_id = ''	#substitute for your own appid from microsofts bing website
 	translate_api_url = "http://api.microsofttranslator.com/V2/Ajax.svc/Translate"
 	detect_api_url = "http://api.microsofttranslator.com/V2/Ajax.svc/Detect"
@@ -53,7 +53,8 @@ class Translator():
 		'zh-CHT' : 'Traditional Chinese'
 	}
 		
-	def __init___(self):
+	def __init__(self, appid=app_id):
+		self.app_id = appid
 		if self.app_id == '' or not self.app_id:
 			raise ValueError("AppId needs to be set when instantiating Translator")
 							
@@ -94,13 +95,13 @@ class Translator():
 			text = str(urllib.request.urlopen(text).read())
 		
 		if(len(text) >= 1024):
-			webList = self.splitCount(text, 1024)
+			longList = self.splitCount(text, 1024)
 			finalText = ''
 			
-			for i in range(0, len(webList)):
+			for i in range(0, len(longList)):
 				query_args = {
 					'appId': self.app_id,
-					'text': webList[i],
+					'text': longList[i],
 					'to': target,
 					'contentType': 'text/plain' if not html else 'text/html',
 					'category': 'general'
@@ -137,16 +138,16 @@ class Translator():
 			text = str(urllib.request.urlopen(text).read())
 		
 		if(len(text) >= 1024):
-			webList = self.splitCount(text, 1024)
-			finalText = ''
-			for i in range(0, 2 if(len(webList) >= 2) else len(webList)):
+			longList = self.splitCount(text, 1024)
+			finalText = []
+			for i in range(0, 2 if(len(longList) >= 2) else len(longList)):
 				query_args = {
 					'appId': self.app_id,
-					'text': webList[i],
+					'text': longList[i],
 					'contentType': 'text/plain' if not html else 'text/html',
 				}
 					
-				finalText += self.query(self.detect_api_url, query_args)
+				finalText.append(self.query(self.detect_api_url, query_args))
 			return finalText
 			
 				
