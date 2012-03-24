@@ -3,6 +3,7 @@
 """
 Interface to Microsoft Translator API
 """
+import os
 import sys
 import urllib.parse
 import urllib.request
@@ -15,7 +16,43 @@ class Translator():
 	translate_api_url = "http://api.microsofttranslator.com/V2/Ajax.svc/Translate"
 	detect_api_url = "http://api.microsofttranslator.com/V2/Ajax.svc/Detect"
 
-	
+	langCodes = {
+		'ar' : 'Arabic',
+		'cz' : 'Czech',
+		'da' : 'Danish',
+		'de' : 'German',
+		'en' : 'English',
+		'et' : 'Estonian',
+		'fi' : 'Finnish',
+		'fr' : 'French',
+		'nl' : 'Dutch',
+		'el' : 'Greek',
+		'he' : 'Hebrew',
+		'ht' : 'Haitian Creole',
+		'hu' : 'Hungarian',
+		'id' : 'Indonesian',
+		'it' : 'Italian',
+		'ja' : 'Japanese',
+		'ko' : 'Korean',
+		'lt' : 'Lithuanian',
+		'lv' : 'Latvian',
+		'no' : 'Norweigian',
+		'pl' : 'Polish',
+		'pt' : 'Portuguese',
+		'ro' : 'Romanian',
+		'es' : 'Spanish',
+		'ru' : 'Russian',
+		'sk' : 'Slovak',
+		'sl' : 'Slovene',
+		'sv' : 'Swedish',
+		'th' : 'Thai',
+		'tr' : 'Turkish',
+		'uk' : 'Ukrainian',
+		'vi' : 'Vietnamese',
+		'zh-CHS' : 'Simplified Chinese',		
+		'zh-CHT' : 'Traditional Chinese'
+	}
+		
 	def __init___(self):
 		if self.app_id == '' or not self.app_id:
 			raise ValueError("AppId needs to be set when instantiating Translator")
@@ -41,41 +78,39 @@ class Translator():
 	
 	#translates text or html
 	def translate(self, text, source=None, target="en"):
-		html = False
+		if self.app_id == '' or not self.app_id:
+			raise Exception("Manually enter an appId from\"https://ssl.bing.com/webmaster/Developers/\"")
 		
+		if  target not in self.langCodes:
+			raise Exception("Output Language is not supported, type \"translate.py  -l\" to view language codes")
+		
+		if source != None and source not in self.langCodes:
+			raise Exception("Input  Language is not supported, type \"translate.py  -l\" to view language codes")
+
+
+		html = False
 		if text.startswith("http"):
 			html = True
-			webText = str(urllib.request.urlopen(text).read())
-			if(len(webText) >= 1024):
-				webList = self.splitCount(webText, 1024)
-				finalText = ''
-				
-				for i in range(0, len(webList)):
-					query_args = {
-						'appId': self.app_id,
-						'text': webList[i],
-						'to': target,
-						'contentType': 'text/plain' if not html else 'text/html',
-						'category': 'general'
-					}
-					if source:
-						query_args['from'] = source
-						
-					finalText += self.query(self.translate_api_url, query_args)
+			text = str(urllib.request.urlopen(text).read())
+		
+		if(len(text) >= 1024):
+			webList = self.splitCount(text, 1024)
+			finalText = ''
+			
+			for i in range(0, len(webList)):
+				query_args = {
+					'appId': self.app_id,
+					'text': webList[i],
+					'to': target,
+					'contentType': 'text/plain' if not html else 'text/html',
+					'category': 'general'
+				}
+				if source:
+					query_args['from'] = source
 					
-				return finalText
-			
-			query_args = {
-				'appId': self.app_id,
-				'text': webText,
-				'to': target,
-				'contentType': 'text/plain' if not html else 'text/html',
-				'category': 'general'
-			}
-			if source:
-				query_args['from'] = source
-			
-			return self.query(self.translate_api_url, query_args)
+				finalText += self.query(self.translate_api_url, query_args)
+				
+			return finalText
 	
 		query_args = {
 			'appId': self.app_id,
@@ -93,32 +128,28 @@ class Translator():
 	#on bings end there seems to be an issue with parsing html to detect
 	#todo: work around this shiz
 	def detect(self, text):
-		html = False
+		if self.app_id == '' or not self.app_id:
+			raise Exception("Manually enter an appId from\"https://ssl.bing.com/webmaster/Developers/\"")
 		
+		html = False
 		if text.startswith("http"):
 			html = True
-			webText = str(urllib.request.urlopen(text).read())
-			if(len(webText) >= 1024):
-				webList = self.splitCount(webText, 1024)
-				finalText = ''
-				for i in range(0, 2 if(len(webList) >= 2) else len(webList)):
-					query_args = {
-						'appId': self.app_id,
-						'text': webList[i],
-						'contentType': 'text/plain' if not html else 'text/html',
-					}
-						
-					finalText += self.query(self.detect_api_url, query_args)
-				return finalText
+			text = str(urllib.request.urlopen(text).read())
+		
+		if(len(text) >= 1024):
+			webList = self.splitCount(text, 1024)
+			finalText = ''
+			for i in range(0, 2 if(len(webList) >= 2) else len(webList)):
+				query_args = {
+					'appId': self.app_id,
+					'text': webList[i],
+					'contentType': 'text/plain' if not html else 'text/html',
+				}
+					
+				finalText += self.query(self.detect_api_url, query_args)
+			return finalText
 			
-			query_args = {
-				'appId': self.app_id,
-				'text': webText,
-				'contentType': 'text/plain' if not html else 'text/html',
-			}
-			
-			return self.query(self.detect_api_url, query_args)
-			
+				
 		query_args = {
 			'appId': self.app_id,
 			'text': text,
@@ -142,3 +173,65 @@ class Translator():
 			return data.lstrip(codecs.BOM_UTF16_BE).decode('utf-16-be')
 			
 		return None
+
+
+if __name__ == "__main__":
+	trans = Translator()
+
+	detect      = False
+	sourceLang  = None
+	toLang      = 'en'
+	displayHelp = False
+	text 	    = ''
+
+	for a in sys.argv:
+		if a == '-h' or a == 'help':
+			displayHelp = True
+		elif a == '-l':
+			for k, v in  trans.langCodes.items():
+				print(k+" : "+v)
+
+			sys.exit(0)
+		elif a == '-d':
+			detect = True
+		elif a.startswith('-f'):
+			try:
+				text = open(a[2:], 'r').read()
+			except IOError as e:
+				raise Exception("Invalid file name")
+		elif a.startswith('-t'):
+			toLang = a[2:]
+		elif a.startswith('-s'):
+			sourceLang = a[2:]
+		elif not a.startswith('translate.py'):
+			text = text+a+' '
+
+	if text == '':
+		displayHelp = True
+	
+	if displayHelp == True:
+		print("kraataja: python translation library")
+		print("")
+		print("-h displays this help text")
+		print("usage: translate.py -h")
+		print("")
+		print("-l displays language codes")
+		print("usage: translate.py -l")
+		print("")
+		print("-d detects language and returns language code")
+		print("usage: translate.py -d words to be detected")
+		print("")
+		print("-f(filename) loads file as input text")
+		print("usage: translate.py -ffrancaiswords.txt")
+		print("")
+		print("-t(langCode) translates text to language, ommitting it defaults to english")
+		print("usage: translate.py -tfr hello")
+		print("")
+		print("-s(inputLangCode) specifies what language of input, omitting this will attempt to detect language")
+		print("usage: translate.py -ses si")
+
+
+	elif detect == True:
+		print(trans.detect(text))
+	else:
+		print(trans.translate(text, sourceLang, toLang))
