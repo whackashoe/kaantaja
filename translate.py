@@ -94,6 +94,8 @@ class Translator:
 			html = True
 			text = str(urllib.request.urlopen(text).read())
 		
+		#safe length is 1024
+		#a more optimal solution would be to split on sentence/word end
 		if(len(text) >= 1024):
 			longList = self.splitCount(text, 1024)
 			finalText = ''
@@ -112,7 +114,7 @@ class Translator:
 				finalText += self.query(self.translate_api_url, query_args)
 				
 			return finalText
-	
+			
 		query_args = {
 			'appId': self.app_id,
 			'text': text,
@@ -120,6 +122,7 @@ class Translator:
 			'contentType': 'text/plain' if not html else 'text/html',
 			'category': 'general'
 		}
+		
 		if source:
 			query_args['from'] = source
 			
