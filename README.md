@@ -26,6 +26,7 @@ print(trans.translate(text, trans.detect(text)))
 ~~~~
 
 Command Line:
+
 ~~~~.bash
 #translate to english by default
 python translate.py -tfr poivre gonfleur
