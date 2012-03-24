@@ -17,6 +17,7 @@ kaantaja can:
 Example
 -------
 
+Python:
 
 ~~~~.python
 #Detects Frenchness and then translates it to English by default.
