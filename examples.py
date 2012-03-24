@@ -3,7 +3,8 @@
 import translate
 import urllib.request
 
-tarkus = translate.Translator("2EB3615434F1D1401B9E3636840C763D22B15C35")
+#put appid in here
+tarkus = translate.Translator("")
 
 print("Input Language is "+tarkus.detect("hello world"))
 print("Input Language is "+tarkus.detect("bonjour"))
