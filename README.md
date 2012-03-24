@@ -24,3 +24,15 @@ trans = Translator()
 text = "poivre gonfleur"
 print(trans.translate(text, trans.detect(text)))
 ~~~~
+
+Command Line:
+~~~~
+#translate to english by default
+python translate.py -tfr poivre gonfleur
+
+#load file and translate to arabic (you can omit the -f(from[espanol]) and it will be detected
+python translate.py -ses -tar -fespanoldict.txt
+
+#detects language of file
+python translate.py -d -fespanoldict.txt
+~~~~
