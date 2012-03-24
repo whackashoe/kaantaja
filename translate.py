@@ -56,8 +56,8 @@ class Translator:
 	def __init__(self, appid=app_id):
 		self.app_id = appid
 		if self.app_id == '' or not self.app_id:
-			raise ValueError("AppId needs to be set when instantiating Translator")
-							
+			raise Exception("AppId needs to be set when instantiating Translator")
+			exit(2)
 	
 	#A unicode aware version of urllib.urlencode.
 	#Borrowed from pyfacebook :: http://github.com/sciyoshi/pyfacebook/
@@ -81,7 +81,8 @@ class Translator:
 	def translate(self, text, source=None, target="en"):
 		if self.app_id == '' or not self.app_id:
 			raise Exception("Manually enter an appId from\"https://ssl.bing.com/webmaster/Developers/\"")
-		
+			exit(2)
+			
 		if  target not in self.langCodes:
 			raise Exception("Output Language is not supported, type \"translate.py  -l\" to view language codes")
 		
@@ -134,6 +135,7 @@ class Translator:
 	def detect(self, text):
 		if self.app_id == '' or not self.app_id:
 			raise Exception("Manually enter an appId from\"https://ssl.bing.com/webmaster/Developers/\"")
+			exit(2)
 		
 		html = False
 		if text.startswith("http"):
@@ -227,8 +229,9 @@ if __name__ == "__main__":
 		elif a.startswith('-f'):
 			try:
 				text = open(a[2:], 'r').read()
-			except IOError as e:
-				raise Exception("Invalid file name")
+			except Exception as e:
+				print(e)
+				exit(1)
 		elif a.startswith('-t'):
 			toLang = a[2:]
 		elif a.startswith('-s'):
